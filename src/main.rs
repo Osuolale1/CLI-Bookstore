@@ -28,7 +28,6 @@ use task7::inventory::*;
 use task7::utils::*;
 
 fn main() {
-    // println!("Hello, world!");
     let mut new_bookstore = Bookstore::new();
     loop {
         println!("\n=== BOOKSTORE ===");

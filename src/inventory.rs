@@ -46,7 +46,6 @@ impl Bookstore {
     }
 
     pub fn add_book(&mut self, book: Book) {
-        //I want books that are added by quantity > 0 alongside should be availabble by default, and those with price too should be purchaseable by default
         self.bookstore.push(book);
     }
     pub fn update(&mut self, book_name: String, new_price: f64) {
@@ -130,12 +129,12 @@ impl Bookstore {
     }
 
     pub fn search_book_by_author(&self, author_name: String) {
-        //author_name should handles extra space like this `ROBERT         KIYOSKI`
         let name: String = author_name.split_whitespace().collect::<Vec<_>>().join(" ");
-        if let Some(book) = self.bookstore.iter().find(|b| {
-            b.author.to_lowercase()
-                == name.to_lowercase()
-        }) {
+        if let Some(book) = self
+            .bookstore
+            .iter()
+            .find(|b| b.author.to_lowercase() == name.to_lowercase())
+        {
             println!("Found Book: {:?}", book);
         } else {
             println!("Book Not found");
