@@ -11,17 +11,17 @@
 //   - I want to view all books in the inventory. yes
 // * Stage 2:
 //   - I want to update stock levels when books are purchased. partially yes
-//   - I want to search for books by title or author. 🫠
+//   - I want to search for books by title or author. yes
 // * Stage 3:
 //   - I want to process purchases and reduce inventory. yes
 //   - I want to see low stock warnings. yes
 //
 // Tips:
 // * Organize code into modules: inventory, checkout, and utils. yes
-// * Create a Purchasable trait for items that can be bought. 
+// * Create a Purchasable trait for items that can be bought. yes
 // * Use lifetimes on borrowed title descriptions to avoid cloning. 🙂‍↔️
 // * A HashMap keyed by book ID will make lookups easier. 🥲
-// * Each module should be in its own function for isolation. yes 
+// * Each module should be in its own function for isolation. yes
 
 use std::io::stdin;
 use task7::inventory::*;
@@ -36,8 +36,9 @@ fn main() {
         println!("2. ABOUT BOOK ");
         println!("3. UPDATE BOOK PRICE ");
         println!("4. VIEW ALL BOOKS ");
-        println!("5. SEARCH  ");
-        println!("6. PURCHASE BOOK ");
+        println!("5. SEARCH BY TITLE ");
+        println!("6. SEARCH BY AUTHOR ");
+        println!("7. PURCHASE BOOK ");
         println!("0. EXIT");
 
         let mut input = String::new();
@@ -57,7 +58,11 @@ fn main() {
                 let book_name = get_input().to_uppercase();
 
                 println!("\n ENTER THE BOOK AUTHOR");
-                let book_author = get_input().to_uppercase();
+                let book_author = get_input()
+                    .split_whitespace()
+                    .collect::<Vec<_>>()
+                    .join(" ")
+                    .to_uppercase();
 
                 println!("\n ENTER THE BOOK PRICE");
                 let book_price: f64 = match get_input().parse() {
@@ -112,6 +117,16 @@ fn main() {
                     }
                 };
 
+                println!("\n IS THE BOOK MEANT TO BE SOLD OR NOT");
+                let sellable = match get_input().to_lowercase().as_str() {
+                    "yes" => true,
+                    "no" => false,
+                    _ => {
+                        println!("Invalid Input");
+                        continue;
+                    }
+                };
+
                 let book = Book {
                     title: book_name,
                     author: book_author,
@@ -120,13 +135,14 @@ fn main() {
                     description: book_description,
                     field: book_field,
                     availability: book_availability,
+                    to_be_sold: sellable,
                 };
 
                 new_bookstore.add_book(book);
                 println!("\n BOOK ADDED SUCCESFULLY ");
             }
             2 => {
-                println!("\n ENTER THE BOOK YOU WANT TO VIEW");
+                println!("\n ENTER THE TITLE OF THE BOOK YOU WANT TO VIEW");
                 let book_name = get_input();
 
                 if let Some(book) = new_bookstore
@@ -161,8 +177,17 @@ fn main() {
                     print_all_book(book);
                 }
             }
-            5 => {}
+            5 => {
+                println!("\n SEARCH BOOK BY BOOK NAME ");
+                let book_name = get_input();
+                new_bookstore.search_book_by_title(book_name);
+            }
             6 => {
+                println!("\n SEARCH BOOK BY AUTHOR NAME ");
+                let author_name = get_input();
+                new_bookstore.search_book_by_author(author_name);
+            }
+            7 => {
                 println!("\n ENTER THE TITLE OF THE BOOK YOU WANT TO PURCHASE ");
                 let book_name = get_input();
 
@@ -184,7 +209,7 @@ fn main() {
                 break;
             }
             _ => {
-                println!("\n SELECT AN OPTION BETWEEN 0 - 6 ")
+                println!("\n SELECT AN OPTION BETWEEN 0 - 7 ")
             }
         }
     }

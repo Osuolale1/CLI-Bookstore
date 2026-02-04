@@ -1,6 +1,6 @@
-use crate::utils::*;
+use crate::{checkout::Purchasable, utils::*};
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Book {
     pub title: String,
     pub author: String,
@@ -9,8 +9,9 @@ pub struct Book {
     pub description: String,
     pub field: Field,
     pub availability: Availability,
+    pub to_be_sold: bool,
 }
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum Availability {
     Available,
     Unavailable,
@@ -45,11 +46,12 @@ impl Bookstore {
     }
 
     pub fn add_book(&mut self, book: Book) {
+        //I want books that are added by quantity > 0 alongside should be availabble by default, and those with price too should be purchaseable by default
         self.bookstore.push(book);
     }
     pub fn update(&mut self, book_name: String, new_price: f64) {
         if self.bookstore.is_empty() {
-            println!("No Book found!");
+            println!("\n No Book found!");
             return;
         }
 
@@ -59,15 +61,15 @@ impl Bookstore {
             .find(|b| b.title.to_uppercase() == book_name.to_uppercase())
         {
             book.price = new_price;
-            println!("Price updated successfully!");
+            println!("\n Price updated successfully!");
         } else {
-            println!("Book '{}' not found!", book_name);
+            println!("\n '{}' Book Not Found!", book_name);
         }
     }
 
     pub fn buy_book(&mut self, book_name: String, quantity: u64) {
         if self.bookstore.is_empty() {
-            println!("No Book found!");
+            println!("\n No Book found!");
             return;
         }
 
@@ -76,15 +78,67 @@ impl Bookstore {
             .iter_mut()
             .find(|b| b.title.to_uppercase() == book_name.to_uppercase())
         {
+            if quantity == 0 {
+                println!("\n Cant' Buy 0 Book");
+                return;
+            }
+
+            if !book.purchasable() {
+                println!("\n Dear Reader, {}, is not meant for sell, you can read the E-format on our Site. \n Thanks for your understanding.", book.title);
+                return;
+            }
+
             if quantity > book.stock_quantity {
-                println!("Insufficient Copies");
+                println!(
+                    "\n Insufficient Copies, We only have {} copies left.",
+                    book.stock_quantity
+                );
                 return;
             }
             amount(book, quantity);
-            book.stock_quantity -= quantity;
-            notify(book);
+            println!("\n DO YOU WANT TO CONTINUE WITH YOUR PURCAHSE, YES or NO TO CONTINUE");
+            let _choice = match get_input().to_lowercase().as_str() {
+                "yes" => {
+                    book.stock_quantity -= quantity;
+                    println!("\n PURCHASED SUCCESSFULLY");
+                    notify(book);
+                }
+                "no" => {
+                    println!("\n You're No longer buying.");
+                    return;
+                }
+                _ => {
+                    println!("\n Invalid Input");
+                    return;
+                }
+            };
         } else {
-            println!("Book '{}' not found!", book_name);
+            println!("Book '{}' Not Found!", book_name);
+        }
+    }
+
+    pub fn search_book_by_title(&self, book_name: String) {
+        if let Some(book) = self
+            .bookstore
+            .iter()
+            .find(|s| s.title.to_lowercase() == book_name.to_lowercase())
+        {
+            println!("Found Book: {:?}", book);
+        } else {
+            println!("Book Not found");
+        }
+    }
+
+    pub fn search_book_by_author(&self, author_name: String) {
+        //author_name should handles extra space like this `ROBERT         KIYOSKI`
+        let name: String = author_name.split_whitespace().collect::<Vec<_>>().join(" ");
+        if let Some(book) = self.bookstore.iter().find(|b| {
+            b.author.to_lowercase()
+                == name.to_lowercase()
+        }) {
+            println!("Found Book: {:?}", book);
+        } else {
+            println!("Book Not found");
         }
     }
 }
